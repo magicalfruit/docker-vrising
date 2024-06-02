@@ -1,6 +1,7 @@
 #!/bin/bash
 s=/mnt/vrising/server
 p=/mnt/vrising/persistentdata
+m=/mnt/vrising/mods
 
 term_handler() {
 	echo "Shutting down Server"
@@ -26,12 +27,6 @@ trap 'term_handler' SIGTERM
 
 if [ -z "$LOGDAYS" ]; then
 	LOGDAYS=30
-fi
-if [[ -n $UID ]]; then
-	usermod -u "$UID" docker 2>&1
-fi
-if [[ -n $GID ]]; then
-	groupmod -g "$GID" docker 2>&1
 fi
 if [ -z "$SERVERNAME" ]; then
 	SERVERNAME="trueosiris-V"
@@ -93,12 +88,35 @@ cd "$s" || {
 	echo "Failed to cd to $s"
 	exit 1
 }
+
+
+echo "Cleaning  up old mods (if any)"
+rm -rf BepInEx
+rm -f doorstop_config.ini
+rm -f winhttp.dll
+
+if [ "${ENABLE_MODS}" = 1 ]; then
+    echo "Setting up mods"
+    cp -r  "$m/BepInEx"             "$s/BepInEx"
+    cp     "$m/doorstop_config.ini" "$s/doorstop_config.ini"
+    cp     "$m/winhttp.dll"         "$s/winhttp.dll"
+    export WINEDLLOVERRIDES="winhttp=n,b"
+fi
+
 echo "Starting V Rising Dedicated Server with name $SERVERNAME"
 echo "Trying to remove /tmp/.X0-lock"
 rm /tmp/.X0-lock 2>&1
 echo " "
+
+
+echo "Generating initial Wine configuration..."
+winecfg
+sleep 5
+
+
 echo "Starting Xvfb"
 Xvfb :0 -screen 0 1024x768x16 &
+
 echo "Launching wine64 V Rising"
 echo " "
 v() {
@@ -109,5 +127,5 @@ v
 ServerPID=$!
 
 # Tail log file and waits for Server PID to exit
-/usr/bin/tail -n 0 -f "$p/$logfile" &
+/usr/bin/tail -n 0 -F "$p/$logfile" &
 wait $ServerPID
