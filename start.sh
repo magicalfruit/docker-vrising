@@ -103,6 +103,7 @@ if [ "${ENABLE_MODS}" = 1 ]; then
     cp     "$m/doorstop_config.ini" "$s/doorstop_config.ini"
     cp     "$m/winhttp.dll"         "$s/winhttp.dll"
     export WINEDLLOVERRIDES="winhttp=n,b"
+    export DISPLAY=:0
 fi
 
 echo "Starting V Rising Dedicated Server with name $SERVERNAME"
