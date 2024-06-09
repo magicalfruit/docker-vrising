@@ -111,12 +111,12 @@ echo "Trying to remove /tmp/.X0-lock"
 rm /tmp/.X0-lock 2>&1
 echo " "
 
-echo "Starting Xvfb"
-Xvfb :0 -screen 0 1024x768x16 &
-
 echo "Generating initial Wine configuration..."
 winecfg
 sleep 5
+
+echo "Starting Xvfb"
+Xvfb :0 -screen 0 1024x768x16 &
 
 echo "Launching wine64 V Rising"
 echo " "
